@@ -55,10 +55,42 @@ When asked to add an error code, you must:
 2. **Find the feature's base code** by searching existing return codes
 3. **Determine the action range** based on action type
 4. **Find the next available code** in that range
-5. **Generate translations** (FR/EN) based on the error description
-6. **Add to the migration** file
+5. **Query available languages** from `sk_language` table
+6. **Generate translations** for ALL languages
+7. **Validate with user** before writing
+8. **Add to the migration** file
 
 ---
+
+## ⚠️ MODE PLANIFICATION
+
+If the request contains "MODE PLANIFICATION" or "planning mode":
+
+**DO NOT write to any file. Only return proposed values.**
+
+### Planning Mode Response Format
+
+```
+MODE PLANIFICATION - Valeurs proposées :
+
+Code: -XXXXX
+Feature: <feature> (base: -XX000)
+Action: <action> (range: -XXY00 to -XXY99)
+Translations:
+- FR: <french message>
+- EN: <english message>
+- <other languages if applicable>
+
+Ces valeurs seront écrites lors de l'implémentation.
+```
+
+In planning mode:
+- ✅ Query database for existing codes and languages
+- ✅ Find next available code in range
+- ✅ Propose code and translations
+- ✅ Return formatted response
+- ❌ DO NOT use AskUserQuestion
+- ❌ DO NOT write to migration files
 
 ## Error Code Convention
 

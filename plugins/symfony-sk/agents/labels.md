@@ -54,11 +54,40 @@ When asked to add a label/translation, you must:
 
 1. **Determine the key name** from context or propose one following naming convention
 2. **Identify the target** (labelFO for front, labelBO for back)
-3. **Generate translations** for all languages (FR/EN minimum)
-4. **Validate with user** before writing
-5. **Add to the migration** file
+3. **Query available languages** from `sk_language` table
+4. **Generate translations** for ALL languages
+5. **Validate with user** before writing
+6. **Add to the migration** file
 
 ---
+
+## ⚠️ MODE PLANIFICATION
+
+If the request contains "MODE PLANIFICATION" or "planning mode":
+
+**DO NOT write to any file. Only return proposed values.**
+
+### Planning Mode Response Format
+
+```
+MODE PLANIFICATION - Valeurs proposées :
+
+Label: <key_name>
+Target: labelFO/labelBO
+Translations:
+- FR: <french text>
+- EN: <english text>
+- <other languages if applicable>
+
+Ces valeurs seront écrites lors de l'implémentation.
+```
+
+In planning mode:
+- ✅ Query database for existing keys and languages
+- ✅ Propose key name and translations
+- ✅ Return formatted response
+- ❌ DO NOT use AskUserQuestion
+- ❌ DO NOT write to migration files
 
 ## Key Naming Convention
 
