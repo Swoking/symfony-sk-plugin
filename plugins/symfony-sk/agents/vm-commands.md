@@ -21,6 +21,24 @@ Read the project config from `$CLAUDE_PROJECT_DIR/.claude/project.json`:
 }
 ```
 
+### VM Access Credentials
+
+Database credentials are stored on the VM at:
+```
+/home/alpine/diji.<project-code>.sk
+```
+
+Example for `kotchi2-dev` project:
+```bash
+ssh <host> "cat /home/alpine/diji.kotchi2-dev.sk"
+```
+
+This file contains important configuration including:
+- `sk-dbName` - Database name
+- `sk-dbUser` - Database user
+- `sk-dbPassword` - Database password
+- `sk-port` - Port mappings for services
+
 ## Command pattern
 
 To execute a script on the VM:

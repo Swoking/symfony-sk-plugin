@@ -6,6 +6,44 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 # Controllers & Services
 
+## ⛔ CRITICAL RULES - READ FIRST
+
+**MANDATORY: You MUST use the `AskUserQuestion` tool to validate BEFORE writing ANY migration code.**
+
+### NEVER write to migration files without user validation for:
+
+1. **Security zone** - Zone name + translations for ALL languages
+2. **Security level** - visitor/user/app_right
+3. **Profile access** - Which profiles get access
+4. **ALL translations** - Every label, for ALL languages in `sk_language` table
+
+### Check available languages FIRST:
+
+```bash
+ssh <project-url> "docker exec <project-code>-db psql -U <project-code> -d <project-code> -c 'SELECT code FROM sk_language ORDER BY id;'"
+```
+
+FR and EN are the minimum, but there may be more languages.
+
+### Validation workflow:
+
+```
+1. Gather info → Ask user about security zone, level, profiles
+2. Propose → Use AskUserQuestion to show ALL values before writing
+3. WAIT → Do not proceed until user confirms
+4. Write → Only after explicit "oui/yes/ok" from user
+```
+
+### Required AskUserQuestion calls:
+
+1. **Before creating security zone**: Validate zone name + translations
+2. **Before setting profiles**: Validate which profiles get access
+3. **Before any label/translation**: Validate FR + EN text
+
+**⚠️ VIOLATION: Writing to migration without AskUserQuestion = FAILURE**
+
+---
+
 This skill covers the creation of controllers and services across the front/back/API architecture.
 
 ---
@@ -533,27 +571,97 @@ Before considering a controller complete:
 
 ---
 
-## Questions to Ask User
+## ⚠️ Questions to Ask User - USE AskUserQuestion TOOL
 
-**ALWAYS** ask the user before creating controllers:
+**ALWAYS use `AskUserQuestion` tool before creating controllers:**
 
-1. **Security zone**: "Quelle zone de sécurité utiliser ? (ex: engagement, event, path, ou nouvelle zone)"
+### 1. Security Zone Selection
 
-2. **Security level**: "Quel niveau de sécurité ? (visitor=public, user=connecté, app_right=profils spécifiques)"
+```json
+{
+  "questions": [{
+    "question": "Quelle zone de sécurité utiliser pour ce controller ?",
+    "header": "Zone",
+    "options": [
+      {"label": "engagement", "description": "Zone existante pour les engagements"},
+      {"label": "event", "description": "Zone existante pour les événements"},
+      {"label": "Nouvelle zone", "description": "Créer une nouvelle zone de sécurité"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
 
-3. **Profiles** (if app_right): "Quels profils doivent avoir accès ? (admin, coach, chief, attendant)"
+### 2. Security Level
 
-4. **Zone translations** (if new zone): Display proposed translations for user validation:
-   ```
-   Nouvelle zone de sécurité proposée :
-   - Code: feature
-   - FR: Fonctionnalité
-   - EN: Feature
+```json
+{
+  "questions": [{
+    "question": "Quel niveau de sécurité pour ce controller ?",
+    "header": "Sécurité",
+    "options": [
+      {"label": "visitor", "description": "Accès public sans authentification"},
+      {"label": "user", "description": "Utilisateur connecté requis"},
+      {"label": "app_right", "description": "Profils spécifiques avec droits"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
 
-   Ces traductions sont-elles correctes ?
-   ```
+### 3. Profile Access (if app_right)
 
-5. **Labels/translations**: Always display any labels you plan to add for user validation before creating the migration.
+```json
+{
+  "questions": [{
+    "question": "Quels profils doivent avoir accès ?",
+    "header": "Profils",
+    "options": [
+      {"label": "admin", "description": "Administrateurs"},
+      {"label": "coach", "description": "Coachs"},
+      {"label": "chief", "description": "Responsables"},
+      {"label": "attendant", "description": "Participants"}
+    ],
+    "multiSelect": true
+  }]
+}
+```
+
+### 4. Zone Translations (if new zone)
+
+```json
+{
+  "questions": [{
+    "question": "Nouvelle zone de sécurité :\n• Code: feature\n• FR: Fonctionnalité\n• EN: Feature\n\nCes traductions sont-elles correctes ?",
+    "header": "Zone",
+    "options": [
+      {"label": "Oui, valider", "description": "Les traductions sont correctes"},
+      {"label": "Modifier", "description": "Changer les traductions"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
+
+### 5. Labels/Translations Validation
+
+**⛔ ALWAYS validate ALL labels before writing to migration:**
+
+```json
+{
+  "questions": [{
+    "question": "Labels à ajouter :\n\n1. feature_title (labelFO)\n   • FR: Titre\n   • EN: Title\n\n2. feature_description (labelFO)\n   • FR: Description\n   • EN: Description\n\nCes valeurs sont-elles correctes ?",
+    "header": "Labels",
+    "options": [
+      {"label": "Oui, valider", "description": "Tous les labels sont corrects"},
+      {"label": "Modifier", "description": "Changer un ou plusieurs labels"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
+
+**⛔ NEVER write to migration file WITHOUT using AskUserQuestion first.**
 
 ---
 

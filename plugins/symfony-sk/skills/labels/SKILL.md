@@ -6,6 +6,37 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 # Labels & Translations
 
+## ⛔ CRITICAL RULES - READ FIRST
+
+**MANDATORY: You MUST use the `AskUserQuestion` tool to validate BEFORE writing ANY migration code.**
+
+### NEVER write to migration files without user validation for:
+
+1. **Label keys** - Always show proposed key name
+2. **ALL translations** - Show translations for ALL languages in `sk_language` table
+3. **Target group** - Confirm labelFO vs labelBO
+
+### Check available languages FIRST:
+
+```bash
+ssh <project-url> "docker exec <project-code>-db psql -U <project-code> -d <project-code> -c 'SELECT code FROM sk_language ORDER BY id;'"
+```
+
+FR and EN are the minimum, but there may be more languages.
+
+### Validation workflow:
+
+```
+1. Determine → Key name, target, translations
+2. Propose → Use AskUserQuestion to show all values
+3. WAIT → Do not proceed until user confirms
+4. Write → Only after explicit "oui/yes/ok" from user
+```
+
+**⚠️ VIOLATION: Writing to migration without AskUserQuestion = FAILURE**
+
+---
+
 **ALL text in the application MUST use translation keys.** Never hardcode text directly in templates or JS.
 
 This includes:
@@ -139,8 +170,30 @@ Example for labelFO:
 The agent will:
 1. Propose a key following the naming convention
 2. Generate FR/EN translations
-3. Ask for your validation
-4. Add to the specified migration
+3. **Use AskUserQuestion for validation**
+4. Add to the specified migration only after confirmation
+
+### ⚠️ ALWAYS Validate with AskUserQuestion
+
+**Before writing ANY label to migration, use AskUserQuestion:**
+
+```json
+{
+  "questions": [{
+    "question": "Label proposé :\n• Clé : engagement_confirm_done_title\n• Cible : labelFO\n\nTraductions :\n• FR : Confirmer la complétion\n• EN : Confirm completion\n\nCes valeurs sont-elles correctes ?",
+    "header": "Label",
+    "options": [
+      {"label": "Oui, valider", "description": "La clé et les traductions sont correctes"},
+      {"label": "Modifier la clé", "description": "Changer le nom de la clé"},
+      {"label": "Modifier FR", "description": "Changer la traduction française"},
+      {"label": "Modifier EN", "description": "Changer la traduction anglaise"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
+
+**⛔ NEVER write to migration file WITHOUT using AskUserQuestion first.**
 
 ### How to call the agent
 

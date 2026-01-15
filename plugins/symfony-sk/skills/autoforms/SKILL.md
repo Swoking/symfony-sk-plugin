@@ -6,6 +6,44 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 # AutoForms
 
+## ⛔ CRITICAL RULES - READ FIRST
+
+**MANDATORY: You MUST use the `AskUserQuestion` tool to validate BEFORE writing ANY migration code.**
+
+### NEVER write to migration files without user validation for:
+
+1. **Form fields** - List of fields and their types
+2. **Field labels** - Translations for ALL languages in `sk_language` table
+3. **Error codes** - All validation error codes and messages (all languages)
+4. **Mandatory fields** - Which fields are required
+
+### Check available languages FIRST:
+
+```bash
+ssh <project-url> "docker exec <project-code>-db psql -U <project-code> -d <project-code> -c 'SELECT code FROM sk_language ORDER BY id;'"
+```
+
+FR and EN are the minimum, but there may be more languages.
+
+### Validation workflow:
+
+```
+1. Gather info → Ask user about fields, types, mandatory
+2. Propose → Use AskUserQuestion to show ALL labels + error codes
+3. WAIT → Do not proceed until user confirms
+4. Write → Only after explicit "oui/yes/ok" from user
+```
+
+### Required AskUserQuestion calls:
+
+1. **Form structure**: Validate field list before creating DTO
+2. **Field labels**: Validate ALL FR + EN translations
+3. **Error codes**: Use Error Codes Agent (which validates via AskUserQuestion)
+
+**⚠️ VIOLATION: Writing to migration without AskUserQuestion = FAILURE**
+
+---
+
 AutoForms are forms declared via DTOs with validation attributes. The form structure and validation is automatically generated from the DTO.
 
 ---
@@ -397,11 +435,66 @@ Before considering an autoform complete:
 
 ---
 
-## Questions to Ask User
+## ⚠️ Questions to Ask User - USE AskUserQuestion TOOL
 
-**ALWAYS** ask the user before creating autoforms:
+**ALWAYS use `AskUserQuestion` tool before creating autoforms:**
 
-1. **Form fields**: "Quels champs sont nécessaires pour ce formulaire ?"
-2. **Field types**: "Quel type pour chaque champ ? (string, textarea, date, time, boolean, select...)"
-3. **Mandatory fields**: "Quels champs sont obligatoires ?"
-4. **Translations**: Display proposed labels for user validation before creating the migration.
+### 1. Form Fields
+
+```json
+{
+  "questions": [{
+    "question": "Quels champs sont nécessaires pour ce formulaire ?",
+    "header": "Champs",
+    "options": [
+      {"label": "Texte court", "description": "StringProperty - titre, nom, etc."},
+      {"label": "Texte long", "description": "TextareaProperty - description, notes"},
+      {"label": "Date", "description": "DateProperty - date de début, échéance"},
+      {"label": "Heure", "description": "TimeProperty - heure de début/fin"}
+    ],
+    "multiSelect": true
+  }]
+}
+```
+
+### 2. Field Details (for each field)
+
+```json
+{
+  "questions": [{
+    "question": "Configuration du champ 'title' :",
+    "header": "Champ",
+    "options": [
+      {"label": "Obligatoire", "description": "Le champ doit être rempli"},
+      {"label": "Optionnel", "description": "Le champ peut être vide"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
+
+### 3. Field Labels Validation
+
+**⛔ ALWAYS validate ALL labels before writing to migration:**
+
+```json
+{
+  "questions": [{
+    "question": "Labels des champs du formulaire :\n\n1. EventCreateDto_title\n   • FR: Titre\n   • EN: Title\n\n2. EventCreateDto_date\n   • FR: Date\n   • EN: Date\n\n3. EventCreateDto_note\n   • FR: Notes\n   • EN: Notes\n\nCes traductions sont-elles correctes ?",
+    "header": "Labels",
+    "options": [
+      {"label": "Oui, valider", "description": "Tous les labels sont corrects"},
+      {"label": "Modifier", "description": "Changer un ou plusieurs labels"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
+
+### 4. Error Codes Validation
+
+**Use the Error Codes Agent** which will validate via AskUserQuestion:
+
+> "Add error codes for EventCreateDto: emptyError for DTO (-28100), and errors for fields title (-28102), date (-28101), note (-28106). Feature: event, Action: create, Migration: Version20260115160000"
+
+**⛔ NEVER write to migration file WITHOUT using AskUserQuestion first for ALL labels.**
