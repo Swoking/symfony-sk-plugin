@@ -1,0 +1,8 @@
+{
+  "name": "symfony-sk",
+  "version": "1.0.0",
+  "description": "Plugin pour projets Symfony StarterKit - Connexion VM automatique, commandes SSH, conventions PHP",
+  "author": {
+    "name": "Gabriel Robbe"
+  }
+}

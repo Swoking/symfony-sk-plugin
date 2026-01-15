@@ -1,0 +1,19 @@
+{
+  "name": "symfony-sk-plugin",
+  "owner": {
+    "name": "Gabriel Robbe",
+    "email": "robbe.gabriel@gmail.com"
+  },
+  "description": "A collection of Claude Code plugins for Symfony StarterKit projects",
+  "plugins": [
+    {
+      "name": "symfony-sk",
+      "source": "./plugins/symfony-sk",
+      "description": "Plugin pour projets Symfony StarterKit - Connexion VM automatique, commandes SSH, conventions PHP",
+      "author": {
+        "name": "Gabriel Robbe",
+        "email": "robbe.gabriel@gmail.com"
+      }
+    }
+  ]
+}
