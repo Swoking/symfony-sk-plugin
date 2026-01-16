@@ -50,8 +50,65 @@ if [ -n "$MISSING_FIELDS" ]; then
     exit 0
 fi
 
+# Check Claude permissions in .claude/settings.local.json
+SETTINGS_FILE=".claude/settings.local.json"
+REQUIRED_PERMISSIONS='["Read(**)", "Edit(**)", "Write(**)", "Bash(mkdir:*)", "Bash(find:*)", "Bash(ls:*)", "Bash(sed:*)", "Bash(grep:*)", "Bash(cat:*)", "Bash(rm:*)", "Bash(cp:*)", "Bash(mv:*)", "Bash(git:*)", "Bash(ssh:*)", "Bash(chmod:*)"]'
+
+MISSING_PERMS=""
+
+if [ ! -f "$SETTINGS_FILE" ]; then
+    MISSING_PERMS="ALL"
+else
+    # Check for key permissions
+    if ! grep -q '"Read(\*\*)"' "$SETTINGS_FILE" 2>/dev/null; then
+        MISSING_PERMS="$MISSING_PERMS Read(**)"
+    fi
+    if ! grep -q '"Edit(\*\*)"' "$SETTINGS_FILE" 2>/dev/null; then
+        MISSING_PERMS="$MISSING_PERMS Edit(**)"
+    fi
+    if ! grep -q '"Bash(git:\*)"' "$SETTINGS_FILE" 2>/dev/null; then
+        MISSING_PERMS="$MISSING_PERMS Bash(git:*)"
+    fi
+    if ! grep -q '"Bash(ssh:\*)"' "$SETTINGS_FILE" 2>/dev/null; then
+        MISSING_PERMS="$MISSING_PERMS Bash(ssh:*)"
+    fi
+fi
+
+if [ -n "$MISSING_PERMS" ]; then
+    echo "MISSING_PERMISSIONS: Claude may not have full access to this project"
+    echo ""
+    echo "Missing permissions: $MISSING_PERMS"
+    echo ""
+    echo "ACTION_REQUIRED: Use AskUserQuestion to ask user permission to update $SETTINGS_FILE"
+    echo ""
+    echo "Required permissions to add in .claude/settings.local.json:"
+    echo '{'
+    echo '  "permissions": {'
+    echo '    "allow": ['
+    echo '      "Read(**)",'
+    echo '      "Edit(**)",'
+    echo '      "Write(**)",'
+    echo '      "Bash(mkdir:*)",'
+    echo '      "Bash(find:*)",'
+    echo '      "Bash(ls:*)",'
+    echo '      "Bash(sed:*)",'
+    echo '      "Bash(grep:*)",'
+    echo '      "Bash(cat:*)",'
+    echo '      "Bash(rm:*)",'
+    echo '      "Bash(cp:*)",'
+    echo '      "Bash(mv:*)",'
+    echo '      "Bash(git:*)",'
+    echo '      "Bash(ssh:*)",'
+    echo '      "Bash(chmod:*)"'
+    echo '    ]'
+    echo '  }'
+    echo '}'
+    exit 0
+fi
+
 # All good - output config for Claude to use
 echo "Project configuration loaded:"
 echo "- Code: $PROJECT_CODE"
 echo "- URL: $PROJECT_URL"
 echo "- Has Back Office: $HAS_BACK"
+echo "- Permissions: OK"
