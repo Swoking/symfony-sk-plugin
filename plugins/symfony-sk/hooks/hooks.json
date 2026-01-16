@@ -16,6 +16,20 @@
           }
         ]
       }
+    ],
+    "PostToolCall": [
+      {
+        "matcher": {
+          "toolName": "Edit|Write"
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/post-edit-audit.sh \"$TOOL_RESULT_FILE_PATH\"",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }
