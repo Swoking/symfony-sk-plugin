@@ -4,5 +4,6 @@
   "description": "Plugin pour projets Symfony StarterKit - Connexion VM automatique, commandes SSH, conventions PHP",
   "author": {
     "name": "Gabriel Robbe"
-  }
+  },
+  "agents": "./agents/"
 }
