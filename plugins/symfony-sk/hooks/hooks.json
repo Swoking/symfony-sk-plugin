@@ -22,7 +22,7 @@
         ]
       }
     ],
-    "PostToolCall": [
+    "PostToolUse": [
       {
         "matcher": {
           "toolName": "Edit|Write"

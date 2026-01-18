@@ -15,6 +15,7 @@ EXT="${FILE_PATH##*.}"
 
 # Determine which audits to run based on file type
 AUDITS=""
+DOC_GEN=""
 
 case "$EXT" in
     php)
@@ -22,10 +23,14 @@ case "$EXT" in
         # Check if it's a migration file
         if [[ "$FILE_PATH" == *"/migrations/"* ]] || [[ "$FILE_PATH" == *"/Migrations/"* ]]; then
             AUDITS="$AUDITS translation-audit"
+        else
+            # Add doc-generator for non-migration PHP files
+            DOC_GEN="doc-generator"
         fi
         ;;
     js|ts|jsx|tsx)
         AUDITS="code-audit security-audit side-effects-audit"
+        DOC_GEN="doc-generator"
         ;;
     twig|html)
         AUDITS="code-audit"
@@ -40,13 +45,23 @@ case "$EXT" in
         ;;
 esac
 
-if [ -n "$AUDITS" ]; then
-    echo "AUDIT_REQUIRED for: $FILE_PATH"
+if [ -n "$AUDITS" ] || [ -n "$DOC_GEN" ]; then
+    echo "POST_EDIT_ACTIONS for: $FILE_PATH"
     echo ""
-    echo "Run the following audit agents in parallel:"
-    for AUDIT in $AUDITS; do
-        echo "- symfony-sk:$AUDIT"
-    done
-    echo ""
-    echo "Pass the file path to each agent for analysis."
+
+    if [ -n "$AUDITS" ]; then
+        echo "Run the following audit agents:"
+        for AUDIT in $AUDITS; do
+            echo "- symfony-sk:$AUDIT"
+        done
+        echo ""
+    fi
+
+    if [ -n "$DOC_GEN" ]; then
+        echo "Run documentation generator:"
+        echo "- symfony-sk:$DOC_GEN"
+        echo ""
+    fi
+
+    echo "Pass the file path to each agent."
 fi
