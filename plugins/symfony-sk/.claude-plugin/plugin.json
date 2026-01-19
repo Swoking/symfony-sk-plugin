@@ -5,5 +5,39 @@
   "author": {
     "name": "Gabriel Robbe"
   },
-  "hooks": "./hooks/hooks.json"
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/check-project-config.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/ssh-connect.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/vm-health-check.sh",
+            "timeout": 45
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/post-edit-audit.sh \"$TOOL_RESULT_FILE_PATH\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
 }
