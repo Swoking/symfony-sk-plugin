@@ -8,6 +8,19 @@ model: haiku
 
 Execute commands on the project's remote VM.
 
+## ⚠️ Step 0: Verify Configuration
+
+**BEFORE executing any command**, invoke the `symfony-sk:check-config` skill to ensure project is configured.
+
+```
+Skill: symfony-sk:check-config
+```
+
+If config is missing, the skill will ask the user for information.
+If user cancels, STOP and inform that configuration is required.
+
+---
+
 ## Configuration
 
 Read from `$CLAUDE_PROJECT_DIR/.claude/project.json`:

@@ -8,6 +8,19 @@ model: sonnet
 
 Guided refactoring with automatic cross-codebase updates.
 
+## ⚠️ Step 0: Verify Configuration
+
+**BEFORE starting refactoring**, invoke the `symfony-sk:check-config` skill to ensure project is configured.
+
+```
+Skill: symfony-sk:check-config
+```
+
+If config is missing, the skill will ask the user for information.
+If user cancels, STOP and inform that configuration is required.
+
+---
+
 ## Mission
 
 Perform safe refactoring operations:

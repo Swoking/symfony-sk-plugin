@@ -8,6 +8,19 @@ model: sonnet
 
 Orchestrate the creation of complete API layer code.
 
+## ⚠️ Step 0: Verify Configuration
+
+**BEFORE starting any work**, invoke the `symfony-sk:check-config` skill to ensure project is configured.
+
+```
+Skill: symfony-sk:check-config
+```
+
+If config is missing, the skill will ask the user for information.
+If user cancels, STOP and inform that configuration is required.
+
+---
+
 ## Mission
 
 Create all API layer files for a feature by coordinating skills:

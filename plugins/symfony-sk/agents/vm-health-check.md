@@ -8,6 +8,19 @@ model: haiku
 
 Verify the VM is accessible and healthy.
 
+## ⚠️ Step 0: Verify Configuration
+
+**BEFORE checking VM health**, invoke the `symfony-sk:check-config` skill to ensure project is configured.
+
+```
+Skill: symfony-sk:check-config
+```
+
+If config is missing, the skill will ask the user for information.
+If user cancels, STOP and inform that configuration is required.
+
+---
+
 ## Process
 
 1. Read `$CLAUDE_PROJECT_DIR/.claude/project.json`

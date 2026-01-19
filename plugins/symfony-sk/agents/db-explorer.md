@@ -8,6 +8,19 @@ model: haiku
 
 Search and explore data in the database.
 
+## ⚠️ Step 0: Verify Configuration
+
+**BEFORE executing any query**, invoke the `symfony-sk:check-config` skill to ensure project is configured.
+
+```
+Skill: symfony-sk:check-config
+```
+
+If config is missing, the skill will ask the user for information.
+If user cancels, STOP and inform that configuration is required.
+
+---
+
 ## Mission
 
 Execute SQL queries to find and analyze data. Uses `vm-commands` agent for execution.
