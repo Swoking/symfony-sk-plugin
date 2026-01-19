@@ -5,16 +5,34 @@
 
 PROJECT_CONFIG=".claude/project.json"
 
+# Helper function to output JSON format for Claude Code hooks
+output_json() {
+    local context="$1"
+    if command -v jq &>/dev/null; then
+        jq -n --arg ctx "$context" '{
+            "hookSpecificOutput": {
+                "hookEventName": "SessionStart",
+                "additionalContext": $ctx
+            }
+        }'
+    else
+        context=$(echo "$context" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
+        printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}' "$context"
+    fi
+}
+
 # Check if config exists
 if [ ! -f "$PROJECT_CONFIG" ]; then
-    echo "SKIP_VM_CHECK: No project config found"
+    output_json "SKIP_VM_CHECK: No project config found"
     exit 0
 fi
 
 # Config exists, request health check
-echo "VM_HEALTH_CHECK_REQUIRED"
-echo ""
-echo "Run the vm-health-check agent to verify VM status:"
-echo "- symfony-sk:vm-health-check"
-echo ""
-echo "This checks: ping, SSH, front, back (if exists), API"
+MESSAGE="VM_HEALTH_CHECK_REQUIRED
+
+Run the vm-health-check agent to verify VM status:
+- symfony-sk:vm-health-check
+
+This checks: ping, SSH, front, back (if exists), API"
+
+output_json "$MESSAGE"

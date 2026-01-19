@@ -5,6 +5,22 @@
 
 FILE_PATH="$1"
 
+# Helper function to output JSON format for Claude Code hooks
+output_json() {
+    local context="$1"
+    if command -v jq &>/dev/null; then
+        jq -n --arg ctx "$context" '{
+            "hookSpecificOutput": {
+                "hookEventName": "PostToolUse",
+                "additionalContext": $ctx
+            }
+        }'
+    else
+        context=$(echo "$context" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
+        printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"%s"}}' "$context"
+    fi
+}
+
 # Skip if no file path
 if [ -z "$FILE_PATH" ]; then
     exit 0
@@ -46,22 +62,29 @@ case "$EXT" in
 esac
 
 if [ -n "$AUDITS" ] || [ -n "$DOC_GEN" ]; then
-    echo "POST_EDIT_ACTIONS for: $FILE_PATH"
-    echo ""
+    MESSAGE="POST_EDIT_ACTIONS for: $FILE_PATH
+
+"
 
     if [ -n "$AUDITS" ]; then
-        echo "Run the following audit agents:"
+        MESSAGE="${MESSAGE}Run the following audit agents:
+"
         for AUDIT in $AUDITS; do
-            echo "- symfony-sk:$AUDIT"
+            MESSAGE="${MESSAGE}- symfony-sk:$AUDIT
+"
         done
-        echo ""
+        MESSAGE="${MESSAGE}
+"
     fi
 
     if [ -n "$DOC_GEN" ]; then
-        echo "Run documentation generator:"
-        echo "- symfony-sk:$DOC_GEN"
-        echo ""
+        MESSAGE="${MESSAGE}Run documentation generator:
+- symfony-sk:$DOC_GEN
+
+"
     fi
 
-    echo "Pass the file path to each agent."
+    MESSAGE="${MESSAGE}Pass the file path to each agent."
+
+    output_json "$MESSAGE"
 fi

@@ -5,22 +5,40 @@
 
 PROJECT_CONFIG=".claude/project.json"
 
+# Helper function to output JSON format for Claude Code hooks
+output_json() {
+    local context="$1"
+    # Use jq if available, otherwise use printf
+    if command -v jq &>/dev/null; then
+        jq -n --arg ctx "$context" '{
+            "hookSpecificOutput": {
+                "hookEventName": "SessionStart",
+                "additionalContext": $ctx
+            }
+        }'
+    else
+        # Escape special characters for JSON
+        context=$(echo "$context" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr '\n' ' ')
+        printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}' "$context"
+    fi
+}
+
 # Check if config file exists
 if [ ! -f "$PROJECT_CONFIG" ]; then
-    echo "MISSING_CONFIG: No project configuration found at $PROJECT_CONFIG"
-    echo ""
-    echo "ACTION_REQUIRED: Use AskUserQuestion to gather project information:"
-    echo "1. Project code (e.g., 'kotchi', 'myproject')"
-    echo "2. Project VM URL (e.g., 'kotchi2', 'myproject.dev')"
-    echo "3. Does the project have a back office? (yes/no)"
-    echo ""
-    echo "Then create .claude/project.json with this structure:"
-    echo '{'
-    echo '  "projectCode": "<code>",
-'
-    echo '  "projectUrl": "<url>",'
-    echo '  "hasBack": true|false'
-    echo '}'
+    MESSAGE="MISSING_CONFIG: No project configuration found at $PROJECT_CONFIG
+
+ACTION_REQUIRED: Use AskUserQuestion to gather project information:
+1. Project code (e.g., 'kotchi', 'myproject')
+2. Project VM URL (e.g., 'kotchi2', 'myproject.dev')
+3. Does the project have a back office? (yes/no)
+
+Then create .claude/project.json with this structure:
+{
+  \"projectCode\": \"<code>\",
+  \"projectUrl\": \"<url>\",
+  \"hasBack\": true|false
+}"
+    output_json "$MESSAGE"
     exit 0
 fi
 
@@ -44,9 +62,10 @@ if [ -z "$HAS_BACK" ]; then
 fi
 
 if [ -n "$MISSING_FIELDS" ]; then
-    echo "INCOMPLETE_CONFIG: Missing fields in $PROJECT_CONFIG:$MISSING_FIELDS"
-    echo ""
-    echo "ACTION_REQUIRED: Use AskUserQuestion to gather missing information and update $PROJECT_CONFIG"
+    MESSAGE="INCOMPLETE_CONFIG: Missing fields in $PROJECT_CONFIG:$MISSING_FIELDS
+
+ACTION_REQUIRED: Use AskUserQuestion to gather missing information and update $PROJECT_CONFIG"
+    output_json "$MESSAGE"
     exit 0
 fi
 
@@ -75,40 +94,42 @@ else
 fi
 
 if [ -n "$MISSING_PERMS" ]; then
-    echo "MISSING_PERMISSIONS: Claude may not have full access to this project"
-    echo ""
-    echo "Missing permissions: $MISSING_PERMS"
-    echo ""
-    echo "ACTION_REQUIRED: Use AskUserQuestion to ask user permission to update $SETTINGS_FILE"
-    echo ""
-    echo "Required permissions to add in .claude/settings.local.json:"
-    echo '{'
-    echo '  "permissions": {'
-    echo '    "allow": ['
-    echo '      "Read(**)",'
-    echo '      "Edit(**)",'
-    echo '      "Write(**)",'
-    echo '      "Bash(mkdir:*)",'
-    echo '      "Bash(find:*)",'
-    echo '      "Bash(ls:*)",'
-    echo '      "Bash(sed:*)",'
-    echo '      "Bash(grep:*)",'
-    echo '      "Bash(cat:*)",'
-    echo '      "Bash(rm:*)",'
-    echo '      "Bash(cp:*)",'
-    echo '      "Bash(mv:*)",'
-    echo '      "Bash(git:*)",'
-    echo '      "Bash(ssh:*)",'
-    echo '      "Bash(chmod:*)"'
-    echo '    ]'
-    echo '  }'
-    echo '}'
+    MESSAGE="MISSING_PERMISSIONS: Claude may not have full access to this project
+
+Missing permissions: $MISSING_PERMS
+
+ACTION_REQUIRED: Use AskUserQuestion to ask user permission to update $SETTINGS_FILE
+
+Required permissions to add in .claude/settings.local.json:
+{
+  \"permissions\": {
+    \"allow\": [
+      \"Read(**)\",
+      \"Edit(**)\",
+      \"Write(**)\",
+      \"Bash(mkdir:*)\",
+      \"Bash(find:*)\",
+      \"Bash(ls:*)\",
+      \"Bash(sed:*)\",
+      \"Bash(grep:*)\",
+      \"Bash(cat:*)\",
+      \"Bash(rm:*)\",
+      \"Bash(cp:*)\",
+      \"Bash(mv:*)\",
+      \"Bash(git:*)\",
+      \"Bash(ssh:*)\",
+      \"Bash(chmod:*)\"
+    ]
+  }
+}"
+    output_json "$MESSAGE"
     exit 0
 fi
 
 # All good - output config for Claude to use
-echo "Project configuration loaded:"
-echo "- Code: $PROJECT_CODE"
-echo "- URL: $PROJECT_URL"
-echo "- Has Back Office: $HAS_BACK"
-echo "- Permissions: OK"
+MESSAGE="Project configuration loaded:
+- Code: $PROJECT_CODE
+- URL: $PROJECT_URL
+- Has Back Office: $HAS_BACK
+- Permissions: OK"
+output_json "$MESSAGE"
